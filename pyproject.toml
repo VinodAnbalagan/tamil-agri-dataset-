@@ -1,0 +1,20 @@
+[project]
+name = "tamil-agri-dataset"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "adaption>=0.2.1",
+    "beautifulsoup4>=4.14.3",
+    "cohere>=6.1.0",
+    "httpx>=0.28.1",
+    "lxml>=6.0.4",
+    "openai>=2.31.0",
+    "pandas>=3.0.2",
+    "pdfplumber>=0.11.9",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
+    "tqdm>=4.67.3",
+]
