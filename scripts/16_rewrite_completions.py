@@ -13,7 +13,7 @@ The 5-part structure (mandatory for every row):
   4. Prevention — long-term sustainable practice to avoid recurrence
   5. KVK Referral — direct the farmer to nearest KVK or district officer
 
-Uses Claude claude-sonnet-4-20250514 via Anthropic API.
+Uses Claude claude-sonnet-4-6 via Anthropic API.
 Cost: ~$0.50 for 222 rows.
 
 Safe to re-run — skips rows where answer_tamil_v10_final is already filled.
@@ -39,7 +39,7 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 
 try:
-    import anthropic
+    import cohere
 except ImportError:
     print("ERROR: anthropic not installed. Run: pip install anthropic")
     exit(1)
@@ -56,12 +56,12 @@ except ImportError:
 
 # ── CONFIG ───────────────────────────────────────────────────────────────────
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-if not ANTHROPIC_API_KEY:
-    raise ValueError("ANTHROPIC_API_KEY not found. Add it to your .env file.")
+COHERE_API_KEY = os.environ.get("COHERE_API_KEY")
+if not COHERE_API_KEY:
+    raise ValueError("COHERE_API_KEY not found.")
 
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-MODEL  = "claude-sonnet-4-20250514"
+co = cohere.Client(COHERE_API_KEY, timeout=60)
+MODEL = "command-r-plus-08-2024"
 DELAY  = 0.5
 
 # ── SYSTEM PROMPT ─────────────────────────────────────────────────────────────
@@ -140,18 +140,18 @@ def rewrite_completion(row: dict) -> str:
         severity        = row.get("severity", ""),
         farm_scale      = row.get("farm_scale", ""),
         budget_constraint = row.get("budget_constraint", ""),
-        question_tamil_v9 = row.get("question_tamil_v9", "")[:400],
-        answer_tamil_v10  = (row.get("answer_tamil_v10") or row.get("answer_tamil", ""))[:600],
-        answer_english    = row.get("answer_english", "")[:500],
+        question_tamil_v9 = row.get("question_tamil_v9", "")[:200],
+        answer_tamil_v10  = (row.get("answer_tamil_v10") or row.get("answer_tamil", ""))[:300],
+        answer_english    = row.get("answer_english", "")[:300],
     )
     try:
-        response = client.messages.create(
+        response = co.chat(
             model      = MODEL,
-            max_tokens = 1024,
-            system     = SYSTEM_PROMPT,
-            messages   = [{"role": "user", "content": prompt}]
+            preamble   = SYSTEM_PROMPT,
+            message    = prompt,
+            max_tokens = 1500,
         )
-        result = response.content[0].text.strip()
+        result = response.text.strip()
         return result
     except Exception as e:
         print(f"\n  [error] {row.get('id')}: {str(e)[:60]}")
