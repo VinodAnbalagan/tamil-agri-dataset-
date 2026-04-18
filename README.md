@@ -2,18 +2,18 @@
 
 Two grounded, publishing-quality instruction datasets for Indian smallholder farmers, built for the [Adaption Labs Uncharted Data Challenge 2026](https://adaptionlabs.ai/).
 
+## Datasets
+
 | Dataset | Rows | Grade | Score | Languages | HuggingFace |
 |---------|------|-------|-------|-----------|-------------|
 | **Tamil Agricultural Advisory** | 187 | A | 9.4/10 | Tamil | [vinod-anbalagan/tamil-agri-advisory-qa](https://huggingface.co/datasets/vinod-anbalagan/tamil-agri-advisory-qa) |
-| **India Agricultural Advisory** | 131 | *pending* | *pending* | 13 languages | [vinod-anbalagan/india-agri-advisory](https://huggingface.co/datasets/vinod-anbalagan/india-agri-advisory) |
+| **India Agricultural Advisory** | 18,707 | B | 8.5/10 | 12 languages | [vinod-anbalagan/indian-agri-advice-multilingual](https://huggingface.co/datasets/vinod-anbalagan/indian-agri-advice-multilingual) |
 
-**India dataset languages:** Bengali, Gujarati, Hindi, Kashmiri, Malayalam, Marathi, Punjabi, Tamil, Telugu, Urdu, Kannada, Assamese, Odia — covering 15 agro-climatic zones, 17 crops, and over 1 billion speakers.
+**India dataset languages:** Marathi, Bengali, Gujarati, Tamil, Telugu, Punjabi, Malayalam, English, Hindi, Urdu, Kannada, Odia — covering 15 agro-climatic zones, 17 crops, and over 1 billion speakers.
 
 ---
 
 # Tamil Agricultural Advisory Dataset
-
-A grounded, publishing-quality instruction dataset for Tamil Nadu smallholder farmers, built for the [Adaption Labs Uncharted Data Challenge 2026](https://adaptionlabs.ai/).
 
 > **Version:** v13 — 187 rows | Grade A | 9.4/10 | 57.7th percentile
 > **Language:** Tamil (primary) | **Domain:** Agriculture | **Region:** Tamil Nadu, India
@@ -51,7 +51,7 @@ My family farmed in Tamil Nadu for generations — rice at scale in the Palar ri
 
 ### The Grade B→A Breakthrough
 
-After 10 consecutive Grade B submissions across 6 weeks, the breakthrough came from a single insight: **metadata specificity, not row count, drives the score.**
+After 10 consecutive Grade B submissions, the breakthrough came from a single insight: **metadata specificity, not row count, drives the score.**
 
 57% of rows had `season=all`. 45% had `irrigation_type=all`. The platform couldn't generate contextualised advice when the context columns were empty. A TNAU agro-ecological zone lookup table raised the metadata fill rate from 56.8% to 91.2%. The score jumped from 7.7 to 8.9, then to 9.4 after an adapted re-feed.
 
@@ -65,10 +65,13 @@ The raw data was never the problem. 679MB of Kisan Call Centre records with dist
 | ------------------ | -------------------------------------------------------------------------- |
 | `id`               | Unique row ID (tn-agri-XXXX)                                               |
 | `question`         | Context-injected Tamil farmer question                                     |
-| `answer`           | 5-part Tamil advisory answer (avg 1,131 chars)                             |
+| `answer`           | 5-part Tamil advisory answer                                               |
+| `enhanced_prompt`  | Adaption-enriched prompt                                                   |
+| `enhanced_completion` | Adaption-enriched 5-part advisory (avg 2,553 chars)                     |
+| `reasoning_trace`  | Chain-of-thought reasoning                                                 |
 | `category`         | Topic (20 categories — pest_control to mental_health_safety)               |
-| `crop_primary`     | Primary crop (40+ crops, livestock, and aquaculture species)               |
-| `soil_type`        | Soil classification (clay_alluvial, red_laterite, black_cotton, etc.)      |
+| `crop_primary`     | Primary crop (48 crops, livestock, and aquaculture species)                |
+| `soil_type`        | Soil classification (clay_alluvial, red_laterite, black_cotton)            |
 | `irrigation_type`  | Irrigation method (canal, rainfed, drip, borewell, tank_fed)               |
 | `farming_practice` | Conventional / organic / integrated / traditional                          |
 | `region`           | Tamil Nadu agro-ecological zone (delta, dry_zone, coastal, western_ghats)  |
@@ -76,7 +79,7 @@ The raw data was never the problem. 679MB of Kisan Call Centre records with dist
 | `growth_stage`     | Crop growth stage at time of query                                         |
 | `severity`         | Issue severity (low / medium / high / urgent)                              |
 | `source_type`      | Provenance (agricultural_extension, traditional_knowledge, crisis_routing) |
-| `reasoning_type`   | Cognitive pattern (agronomic_advisory, diagnostic, contingency, etc.)      |
+| `reasoning_type`   | Cognitive pattern (agronomic_advisory, diagnostic, contingency)            |
 
 ---
 
@@ -153,21 +156,21 @@ It is also one of the only agricultural datasets in the world to include a **far
 
 ## Pipeline Scripts
 
-| Script                            | Purpose                                    |
-| --------------------------------- | ------------------------------------------ |
-| `04_adapt_data.py`                | Submit to Adaption platform                |
-| `05_filter_v9.py`                 | Quality pre-filter                         |
-| `08_inject_context.py`            | Inject metadata context into prompts       |
-| `10_expand_tamil_answers.py`      | Recast answers to native Tamil             |
-| `11_add_reasoning_tag.py`         | Add reasoning_type column                  |
-| `12_quality_filter.py`            | Score rows, generate submission CSVs       |
-| `13_llm_judge.py`                 | LLM judge via Cohere                       |
-| `14_enrich_submission.py`         | Final metadata enrichment                  |
-| `15_verify_and_fix_mismatches.py` | Fix crop mismatches                        |
-| `16_rewrite_completions.py`       | Rewrite completions to 5-part structure    |
-| `17_extract_kcc_gold.py`          | Extract best KCC rows with native metadata |
-| `18_expand_and_merge.py`          | Expand KCC answers + merge with submission |
-| `19_build_india_dataset.py`       | Generate India-wide dataset (15 agro-climatic zones) |
+| Script                            | Purpose                                                      |
+| --------------------------------- | ------------------------------------------------------------ |
+| `04_adapt_data.py`                | Submit to Adaption platform                                  |
+| `05_filter_v9.py`                 | Quality pre-filter                                           |
+| `08_inject_context.py`            | Inject metadata context into prompts                         |
+| `10_expand_tamil_answers.py`      | Recast answers to native Tamil                               |
+| `11_add_reasoning_tag.py`         | Add reasoning_type column                                    |
+| `12_quality_filter.py`            | Score rows, generate submission CSVs                         |
+| `13_llm_judge.py`                 | LLM judge via Cohere                                         |
+| `14_enrich_submission.py`         | Final metadata enrichment                                    |
+| `15_verify_and_fix_mismatches.py` | Fix crop mismatches                                          |
+| `16_rewrite_completions.py`       | Rewrite completions to 5-part structure                      |
+| `17_extract_kcc_gold.py`          | Extract best KCC rows with native metadata                   |
+| `18_expand_and_merge.py`          | Expand KCC answers + merge with submission                   |
+| `19_build_india_dataset.py`       | Generate India-wide dataset (15 agro-climatic zones)         |
 
 ---
 
@@ -206,22 +209,55 @@ Data sources: [TNAU Agritech Portal](http://agritech.tnau.ac.in/), [Kisan Call C
 
 # India Agricultural Advisory Dataset
 
-> **Version:** v1 — 131 rows | Grade *pending* | 13 languages
-> **Languages:** Bengali, Gujarati, Hindi, Kashmiri, Malayalam, Marathi, Punjabi, Tamil, Telugu, Urdu, Kannada, Assamese, Odia
+> **Version:** v2 — 18,707 rows | Grade B | 8.5/10 | 12 languages
+> **Languages:** Marathi, Bengali, Gujarati, Tamil, Telugu, Punjabi, Malayalam, English, Hindi, Urdu, Kannada, Odia
 > **Domain:** Agriculture | **Region:** All India (15 agro-climatic zones)
 > **License:** CC BY 4.0
 
-An India-wide agricultural advisory dataset covering all 15 Planning Commission agro-climatic zones. Built from ICAR extension knowledge and India's agro-climatic zone framework. Every row carries real metadata: zone, state, soil type, crop, season, and irrigation method. Localized to 13 Indian languages via Adaption's translation pipeline.
+### Overview
+
+An India-wide agricultural advisory dataset covering all 15 Planning Commission agro-climatic zones. Built from ICAR extension knowledge and India's agro-climatic zone framework. Every row carries real metadata: zone, state, soil type, crop, season, and irrigation method. Localized to 12 Indian languages via Adaption's translation and localization pipeline.
+
+### Coverage
 
 | Dimension | Count |
 |-----------|-------|
 | Agro-climatic zones | 15 |
 | Crops | 17 |
-| Categories | 7 |
-| Languages | 13 |
-| Metadata fill rate | 99.2% |
+| Categories | 13 |
+| Languages | 12 |
+| Metadata fill rate | 99.4% |
 
-See [data/README.md](data/README.md) for full documentation.
+### Answer Structure (5-Part ICAR Format)
+
+1. **Situation Assessment** — Acknowledge the farmer's specific zone, crop, soil, and season
+2. **Immediate Action** — Exact dosage, timing, cost in rupees
+3. **Rationale** — Why this fits this specific agro-climatic zone
+4. **Long-term Prevention** — Sustainable practice for future seasons
+5. **KVK Referral** — Contact nearest Krishi Vigyan Kendra
+
+### Data Sources
+
+| Source | What It Grounded |
+|--------|------------------|
+| Agro-Climatic Zones of India (Planning Commission) | Zone-crop-soil-season mappings for all 15 zones |
+| Handbook of Agriculture in India (Oxford, 2007) | National crop agronomy, varieties, dosages |
+| Handbook on General Agriculture (ANGRAU) | Crop science, soil science, pest management |
+| ICAR-CRIDA District Contingency Plans | Drought and disaster management |
+
+---
+
+## Changelog
+
+| Version | Rows | Key Change |
+| --- | --- | --- |
+| v6 | 195 | Structural diversity — contrastive pairs, negative space rows |
+| v7 | 272 | Source expansion — 62 TNAU web pages scraped |
+| v8 | 2,293 | KCC integration — 679MB of government call centre data |
+| v9 | 2,091 | Context injection — Tamil metadata tags in prompts |
+| v10 | 218 | Quality filter — golden dataset, 5-part structure enforced |
+| v12 | 200 | **Metadata fix** — TNAU lookup table, 56%→91% fill rate |
+| v13 | 187 | **Grade A** — adapted re-feed, optimised blueprint, 9.4/10 |
 
 ---
 
@@ -246,4 +282,4 @@ Hugging Face: [vinod-anbalagan](https://huggingface.co/vinod-anbalagan)
 
 ---
 
-_Everything intelligent adapts. Tamil farmers deserve AI that adapts to them._
+*Everything intelligent adapts. Tamil farmers deserve AI that adapts to them.*
